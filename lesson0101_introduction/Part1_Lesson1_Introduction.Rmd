@@ -19,7 +19,7 @@ Download the csv file from the link above, to your local folder, and then read i
 
 
 ```{r}
-df <- read.csv('C:/Users/gillis/Documents/_Personal/IDC/Business_Data_Analytics/human-resources-analytics/HR_comma_sep.csv')
+df <- read.csv('C:/Users/gillis/Documents/_Personal/IDC/Business_Data_Analytics/human-resources-analytics/HR_comma_sep.csv') # Change this path to your downloaded file
 ```
 
 After reading the file you can view it in R Studio, by clicking on the df in the Environment section, or with the view function. 

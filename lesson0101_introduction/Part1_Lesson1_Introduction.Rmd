@@ -48,6 +48,14 @@ summary(left_df)
 
 Of those who left the company less than 1% had a promotion in last 5 years vs 2% in entire population, and only 5% had a work accident vs 14% in entire population. Those who left the company had a much lower average satisfaction from the company than the entire population, but the same average evaluation score.
 
+Another view is to look on the attrition percentage (mean of left) by other factors in the data.
+```{r}
+tapply(df$left,df$salary,mean)
+tapply(df$left,df$sales,mean)
+```
+
+It is clear from this statistics that salary raise impacts very much on attrition, and that managers and RnD have lowest attrition rates, whereas HR have the highest attrition.
+
 <b> </br> <font size=3>Missing values </font></br> </b> 
 
 

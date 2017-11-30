@@ -1,0 +1,155 @@
+---
+output:
+  html_document: default
+  html_notebook: default
+---
+# Business Data Analytics and Prediction</br>
+*Dr. Gilli Shama *
+
+## Lesson 1.3 EDA in R 
+In previous lesson we have taken a quick glance on the data summary. In this exercise you will start analyzing the data visually. Before starting the analysis you need to set a side data for testing.
+
+This exercise is written in [RMarkdown](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf). 
+ 
+### Create a Test Set
+
+After a quick glance, split your data to train and test sets, and then put the test set aside and dont look on it until you have models to compare.
+
+#### 1) Read the data 
+
+The business analytics concepts and code will be demonstrated on HR data of employees attrition, evaluation and satisfaction: https://www.kaggle.com/ludobenistant/hr-analytics 
+
+Download the csv file from the link above, to your local folder, and then read it to a data frame, as below.
+
+```{r}
+df <- read.csv('C:/Users/gillis/Documents/_Personal/IDC/Business_Data_Analytics/human-resources-analytics/HR_comma_sep.csv') # Change this path to your downloaded file
+```
+
+After reading the file you can view it in R Studio, by clicking on the df in the Environment section, or with the view function. 
+
+#### 2) Split the data to train and test
+1. Below is a code that scrumbles the data and then select 75% of the data as train and 25% as test.Run similar code, spliting the data to 80% train and 20% test
+2. Why does the code start with set.seed? What will happen if you'll change its number?
+3. View, what is the difference between df and d?
+4. Think and only then view: what is the number of rows in df.train and df.test?
+5. How can you check if the average attrition is sustained on the test set as in the original data?
+
+```{r}
+set.seed(111)
+bound <- floor((nrow(df)/4)*3)
+d <- df[sample(nrow(df)), ]
+df.train <- d[1:bound, ]
+df.test <- d[(bound+1):nrow(df), ]
+```
+
+
+### Explore each predictor
+
+#### 3) Draw the histogram 
+As a first step visualize each variable separately. Possible visualizations are: histogram, density and boxplot. Where the first one is the most common and recommended. Use histogram to understand the values distribution, noting that many statistical model assume normal distribution.</br>
+Start with simple out of the box histogram: </br>
+```{r}
+hist(df.train$satisfaction_level)
+
+```
+
+Create a nicer histogram. Change the color of the histogram, the labels and the number of breaks.
+```{r}
+hist(df.train$satisfaction_level, main = "Histogram of satisfaction level", xlab = "Satisfaction 0-1", ylab = "Number of employees", border = "blue", col = "light blue", xlim = c(0,1), breaks = 10)
+```
+
+#### 4) Several histograms on one page
+Below are 4 histograms on a page, arranged with the par function. Draw a set of 6 histograms from the HR data.
+```{r}
+par(mfrow = c(2,2) ); 
+hist(df.train$satisfaction_level, main = "Satisfaction", border = "blue", col = "light blue", breaks = 10, xlab = NA, ylab = NA) 
+hist(df.train$last_evaluation, main = "Evaluation", border = "blue", col = "light blue", breaks = 10, xlab = NA, ylab = NA) 
+hist(df.train$number_project, main = "Projects", border = "blue", col = "light blue", breaks = 10, xlab = NA, ylab = NA) 
+hist(df.train$average_montly_hours, main = "Monthly Hrs.", border = "blue", col = "light blue", breaks = 10, xlab = NA, ylab = NA)
+```
+
+#### 5) Several histograms on the same plot
+Histogram's can be in the same plot, and may overlap one on top of another. Therefore, when drawing two histograms on the same graph, use transparent colors.
+```{r}
+h0 <- hist(df.train[ df.train$left==0 ,1], plot = FALSE) #Calculate 2 histograms, but wait with plot
+h1 <- hist(df.train[ df.train$left==1 ,1], plot = FALSE)
+plot(h0, main = "Histogram of satisfaction level per attrition", xlab = "Satisfaction 0-1", ylab = "Number of employees", col = rgb(0,0,1, alpha = 0.5))  #plot the first hist
+plot(h1, col = rgb(1,0,0, alpha = 0.5), add = TRUE) #add the second hist
+legend("right", c("No attrition", "Attrition"), fill = c("blue","red"), cex=0.8) #Legend
+
+```
+
+
+To repeat this drawing, define it as a function per column number, and then repeat the drawing to a multi-graphs page. 
+
+```{r}
+
+hist_attrition <- function(i) { #Function to plot column i of the dataframe
+  h0 <- hist(df.train[ df.train$left==0 ,i], breaks = 20, plot = FALSE) 
+  h1 <- hist(df.train[ df.train$left==1 ,i],breaks = 20, plot = FALSE)
+  plot(h0, main = colnames(df.train)[i], col = rgb(0,0,1, alpha = 0.5), xlab=NULL, ylab = NULL) 
+  plot(h1, col = rgb(1,0,0, alpha = 0.5), add = TRUE) 
+}
+
+par(mfrow = c(2,3), mar=c(2,2,2,2) ) #prepare graph area for 3*2 graphs and small margin
+lapply(1:6, hist_attrition) #Call the function for relevant columns
+```
+
+What can you suspect about those who leave the company from the graphs above?
+
+#### 6) Histogram and bar  
+1. Your target is to predict attrition of high achivers. 
+   + How will you define a high achiver? 
+   + Filter the graphs page above to high achivers. 
+2. Run the *<b>*hist*</b>* function on sales (role)
+   + What is the result?
+   + Why?
+3. To draw a bar chart you can use the function *<b>*barplot*</b>*
+   + Draw a barplot of number of employees per role
+   + Edit the colors, title and axis titles 
+   + In the hist the bars are adjacent, whereas in plot there are spaces between bars. Explain, why?
+4. Draw a bar plot that will show attrition and no-attrition, per role
+
+## Finding connections between variables 
+
+### Correlation plots
+
+Correlations between variables can be investigated with a scatter plot(s).
+
+#### 7) Scatter plot
+
+Below is a scatter plot of last evaluation per the satisfaction level, and those who left the company are marked in red.
+1. Describe a rule: Which employees are likely to leave the company.
+2. If you know the employee's last evaluation what can you tell on his satisfaction level.
+3. The scatterplot below includes 15000 points and therefore many points are hiding others. Draw the same scatterplot for a random sample of 200 points.
+4. Draw a scatterplot of 200 points to investigate if there is a connection between number of projects and the average monthly hours.
+5. Test your conclusion from the question above on a diffrent sample of 200 points.
+
+
+```{r}
+plot(df.train$satisfaction_level, df.train$last_evaluation, col=df.train$left+1)
+```
+
+#### 8) Pairs - table of correlation graphs
+
+To draw a matrix of connections in a set of numerical variables use the pairs function, but first narrow your data to small set of columns as the matrix may be too large. (See [ways to take a subset](https://www.statmethods.net/management/subset.html))
+From the pairs below you can see that this data set variables are not correlated.
+
+Below is a code to draw pairs for all train data. Draw the pairs for a sample of 200 points.
+
+```{r}
+pairs(df.train[c(1:5)])
+```
+
+#### 9) Correlation
+
+To calculate correlations use the cor function. For example:
+```{r}
+cor(df.train$number_project, df.train$average_montly_hours)
+```
+
+1. Calculate the correlation between all df.train numerical variables, in one command. (You may first create a data frame with the numeric columns only.) You may search the web for correlation table. 
+2. Are there diffrences in correlations between the numeric varaiables for those who left the company vs. those who stayed?
+3. For employees who left the company, which 2 predictors have a linear connection (regression)?
+
+
